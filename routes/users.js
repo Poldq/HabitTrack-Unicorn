@@ -1,14 +1,36 @@
 const express = require('express');
 const router = express.Router();
 const {hashPassword} = require('../utils/bcrypt.js');
-const registerUserValidationSchema = require('../utils/validationSchemas.js');
+const registerUserValidationSchema = require('../utils/userValidationSchemas.js');
 const {validationResult , checkSchema, matchedData} = require('express-validator');
 const passport = require('passport');
 const User = require('../database/schemas/user.js');
+const checkAuthorization = require('../middlewares/authorizationMiddleware.js');
+
+
+
+router.delete('/delete',checkAuthorization, async (req, res)=> {
+  const userId = req.user;
+  try {
+   const deletedUser = await User.deleteOne({_id: userId});
+    if (!deletedUser) {
+      return res.status(422).json({error:'Deletion failed'});
+    }
+    req.logout((err) => {
+      if (err) {
+        return res.status(400).json({message: 'Logout failed'});
+      }
+      return res.status(200).json({ message: 'Account deleted successfully'});
+    });
+  } catch (error) {
+    return res.status(500).json({ message: 'Internal Server Error'});
+  }
+});
+
 
 
 router.post('/login', passport.authenticate('local'), function(req, res) {
-  res.status(200).json({ message: 'Login successful' });
+  return res.status(200).json({ message: 'Login successful' });
 });
 
  
@@ -18,11 +40,11 @@ router.post('/logout', (req,res) => {
   }
   req.logout((err) => {
     if (err) {
-      return res.sendStatus(400).json({message: 'Logout failed'});
+      return res.status(400).json({message: 'Logout failed'});
     }
-    return res.sendStatus(200).json({message: 'Logout succesful'});
-  })
-})
+    return res.status(200).json({message: 'Logout succesful'});
+  });
+});
 
 router.post('/register', checkSchema(registerUserValidationSchema), async (req, res, next) => {
 

@@ -2,6 +2,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const users = require('./routes/users');
+const habitPlan = require('./routes/habitPlan');
 const session = require('express-session');
 const passport = require('passport');
 const mongoose = require('mongoose');
@@ -30,6 +31,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 app.use('/api/user', users.router);
+app.use('/api/habitPlan', habitPlan);
+
 
 app.use(function (err, req, res, next) {
   console.error(err);
