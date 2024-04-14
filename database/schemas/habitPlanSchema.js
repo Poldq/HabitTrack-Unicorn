@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const Habit = require('./habitSchema');
 
 const HabitPlanSchema = new mongoose.Schema({
     name: {
@@ -19,6 +20,20 @@ const HabitPlanSchema = new mongoose.Schema({
         required: true
     }
 });
+
+HabitPlanSchema.pre('deleteOne', async function(next){
+    const userId = this.getQuery()['user_id']
+    try {
+        const habitPlan = await HabitPlan.findOne({user_id: userId});
+        if (habitPlan) {
+            await Habit.deleteMany({habitPlan_id: habitPlan._id})
+        }
+        next()
+        
+    } catch (error) {
+        next(error)
+    }
+})
 
 HabitPlanSchema.index({ user_id:1 }, {unique:true, sparse: true});
 

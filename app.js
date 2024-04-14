@@ -3,6 +3,7 @@ const cookieParser = require('cookie-parser');
 const logger = require('morgan');
 const users = require('./routes/users');
 const habitPlan = require('./routes/habitPlan');
+const habit = require('./routes/habit');
 const session = require('express-session');
 const passport = require('passport');
 const mongoose = require('mongoose');
@@ -32,6 +33,7 @@ app.use(passport.initialize());
 app.use(passport.session());
 app.use('/api/user', users.router);
 app.use('/api/habitPlan', habitPlan);
+app.use('/api/habitPlan/habits', habit);
 
 
 app.use(function (err, req, res, next) {
