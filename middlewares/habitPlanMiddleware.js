@@ -4,9 +4,10 @@ const checkHabitPlan = async (req, res, next) => {
     try {
         const habitPlan = await HabitPlan.findOne({ user_id: req.user });
         if (!habitPlan) {
-            return res.status(404).json({ error: 'User does not have a habit plan' });
+            return res.status(422).json({ error: 'User does not have a habit plan' });
         }
         req.habitPlanID = habitPlan._id
+        req.habitPlan = habitPlan
         next();
     } catch (error) {
         console.error(error);

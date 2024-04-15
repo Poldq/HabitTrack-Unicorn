@@ -47,18 +47,9 @@ const userId = req.user
 });
 
 router.get('/', checkAuthorization, checkHabitPlan, checkStreaks, async (req, res) => {
-    const userId = req.user
     const habits = req.habits
-    try {
-        const habitPlan = await HabitPlan.findOne({user_id: userId});
-        if(!habitPlan) {
-            return res.status(422).json({error:'User dont have a Habit Plan'});
-        }
-        return res.status(200).json({habitPlan, habits});
-    } catch (error) {
-        console.error(error)
-        return res.status(500).json({error: 'Internal Server Error'});
-    }
+    const habitPlan = req.habitPlan
+    return res.status(200).json({habitPlan, habits});
 });
 
 
