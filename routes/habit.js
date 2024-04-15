@@ -5,6 +5,7 @@ const checkHabitPlan = require('../middlewares/habitPlanMiddleware');
 const checkAuthorization = require("../middlewares/authorizationMiddleware")
 const {validationResult , checkSchema, matchedData} = require('express-validator');
 const {habitCreateSchema, habitUpdateSchema} = require('../utils/habitValidationSchema');
+const { checkStreaks } = require('../middlewares/streakMiddleware');
 
 router.post('/', 
     checkAuthorization, checkHabitPlan, checkSchema(habitCreateSchema), 
@@ -60,32 +61,14 @@ router.delete('/:habitID', checkAuthorization, checkHabitPlan, async(req, res)=>
     }
 });
 
-router.get('/', checkAuthorization, checkHabitPlan, async(req, res)=> {
-    habitPlanID = req.habitPlanID
-    try {
-        const habits = await Habit.find({habitPlan_id: habitPlanID})
-        const currentDate = new Date();
+router.get('/', checkAuthorization, checkHabitPlan, checkStreaks, async(req, res)=> {
+   const habits = req.habits
+   return res.status(200).json(habits)
+});
 
-        for (const habit of habits) {
-            const lastUpdated = habit.lastUpdated;
-            if (lastUpdated) {
-                const lastUpdatedMidnight = lastUpdated.setHours(0, 0, 0, 0);
-                const timeElapsedAfterMid = currentDate - lastUpdatedMidnight;
-                const hoursElapsedAfterMid = timeElapsedAfterMid / (1000 * 60 * 60);
-                
-                if (hoursElapsedAfterMid > 23.9) {
-                    habit.streak = 0;
-                    await habit.save();
-                }
-            }
-        }
-        return res.status(200).json(habits)
-    } catch (error) {
-        return res.status(500).json("Internal Server Error")
-    }
-    
-    
-})
+
+
+
 // for fast loading of habits, for tests only
 // router.get('/load_habits', checkAuthorization, checkHabitPlan, async(req, res)=> {
 //     const habitPlanID = req.habitPlanID

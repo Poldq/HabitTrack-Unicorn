@@ -4,6 +4,8 @@ const HabitPlan = require('../database/schemas/habitPlanSchema');
 const checkAuthorization = require('../middlewares/authorizationMiddleware');
 const {validationResult , checkSchema, matchedData} = require('express-validator');
 const createHabitPlanSchema = require('../utils/habitPlanValidationSchema');
+const checkHabitPlan = require('../middlewares/habitPlanMiddleware');
+const { checkStreaks } = require('../middlewares/streakMiddleware');
 
 router.post('/', checkAuthorization, checkSchema(createHabitPlanSchema), async (req, res)=> {
     const errors = validationResult(req);
@@ -44,15 +46,17 @@ const userId = req.user
 }
 });
 
-router.get('/', checkAuthorization, async (req, res) => {
+router.get('/', checkAuthorization, checkHabitPlan, checkStreaks, async (req, res) => {
     const userId = req.user
+    const habits = req.habits
     try {
         const habitPlan = await HabitPlan.findOne({user_id: userId});
         if(!habitPlan) {
             return res.status(422).json({error:'User dont have a Habit Plan'});
         }
-        return res.status(200).json(habitPlan);
+        return res.status(200).json({habitPlan, habits});
     } catch (error) {
+        console.error(error)
         return res.status(500).json({error: 'Internal Server Error'});
     }
 });
